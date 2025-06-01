@@ -38,6 +38,7 @@ I am using a MacBook with m1 chip, 16GB RAM, 500GB internal storage, I obviously
 
 
 ## Merge all 5 JSON files
+Merge 2 files at a time. 1 & 2. Then the merged output of 1 & 2 with 3. Merging all 5 at once did not work for me for some reason.
 ```python
 import os
 import json
@@ -45,7 +46,7 @@ import ijson
 from tqdm import tqdm
 
 input_dir = '/Volumes/10TB/5_files_2TB_reddit_comments'
-output_path = '/Volumes/10TB/merged_output_2.jsonl'
+output_path = '/Volumes/10TB/merged_output/merged.jsonl'
 
 files = [f for f in os.listdir(input_dir) if f.endswith('.json') or f.endswith('.jsonl')]
 print(f"Found {len(files)} files to process.\n")
@@ -89,6 +90,26 @@ with open(output_path, 'w', encoding='utf-8') as outfile:
 print(f"\n✅ Merged {count} total JSON objects into:\n{output_path}")
 ```
 
+## Clean JSON
+The merged JSON, since its reddit data, is in the form {} {} ... object object and is not a proper JSON format. We should correct it by wrapping it in an array and separate the objects by a comma.
+```python
+with open("/Volumes/10TB/merged_output/merged.json", "r", encoding="utf-8") as infile, \
+     open("/Volumes/10TB/correct_json/correct.json", "w", encoding="utf-8") as outfile:
+
+    outfile.write("[\n")
+    first = True
+    for line in infile:
+        line = line.strip()
+        if not line:
+            continue
+        if not first:
+            outfile.write(",\n")
+        outfile.write(line)
+        first = False
+    outfile.write("\n]")
+    print(f"JSON Array file saved to: {output_csv_path}")
+```
+
 ## JSON to CSV
 
 We need ijson lib to not load all the data into memory at once. If you have only 16GB ram then 38GB wont fit.
@@ -101,8 +122,8 @@ import csv
 import os
 
 # Paths
-input_json_path = '/Volumes/10TB/2TB_reddit_data_unzip_in_bigquery_only_RC_2015-01.json'
-output_dir = '/Volumes/10TB/output_2tb'
+input_json_path = '/Volumes/10TB/correct_json/correct.json'
+output_dir = '/Volumes/10TB/csv_output/'
 output_csv_path = os.path.join(output_dir, '2tb_reddit_comments_2015.csv')
 
 # Ensure output directory exists
@@ -113,8 +134,14 @@ with open(input_json_path, 'rb') as json_file, open(output_csv_path, 'w', newlin
     items = ijson.items(json_file, 'item')
     first_item = next(items)
 
+    # Retain all columns
+    all_keys = set()
+    for item in items:
+        all_keys.update(item.keys())
+    fieldnames = sorted(all_keys)  # consistent column order
+
     # Initialize CSV writer
-    writer = csv.DictWriter(csv_file, fieldnames=first_item.keys())
+    writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
     writer.writeheader()
     writer.writerow(first_item)
 
