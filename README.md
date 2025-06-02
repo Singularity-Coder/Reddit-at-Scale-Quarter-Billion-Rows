@@ -2,9 +2,10 @@
 Exploratory Data Analysis on 2 Terra Bytes of Reddit data. 
 
 ## Dataset 5 files
+The data is in the JSONL or single object per line format.
 * [Reddit Comments 2015 dataset](https://archive.org/download/2015_reddit_comments_corpus/reddit_data/2015/)
 
-## Sample JSON reddit comments 2015
+## Sample JSONL reddit comments 2015
 ```json
 {
   "score_hidden": false,
@@ -36,9 +37,31 @@ I am using a MacBook with m1 chip, 16GB RAM, 500GB internal storage, I obviously
 * [GEONIX Refurbished 10 TB SATA Hard Drive for Desktop/Surveillance–8.89 cm(3.5 Inch), 6 Gb/s 7200 RPM High Speed Data Transfer, Heavy Duty Hard Disk with 256 MB Cache for Computer PC, 2 Years Warranty](https://www.amazon.in/dp/B0DQ5M168L?ref=ppx_yo2ov_dt_b_fed_asin_title)
 * [SABRENT USB 3.0 to SATA External Hard Drive Lay-Flat Docking Station for 2.5 or 3.5in HDD, SSD [Support UASP] (EC-DFLT)](https://www.amazon.in/dp/B00LS5NFQ2?ref=ppx_yo2ov_dt_b_fed_asin_title)
 
+## Goals
+* Stream files (not load all into RAM)
+* Auto-detect format (JSON array vs JSONL)
+* Write merged output incrementally
+* Minimize temp file and memory use
+* Safe for external drive I/O
+
+Best Approach: Line-by-Line Streaming Merge with Format Detection
+Here’s a memory-safe script that:
+* Opens each file.
+* Peeks at the first non-whitespace character:
+    * [ → JSON Array (use streaming with ijson)
+    * { → JSONL or single object per line
+* Merges all entries line by line to avoid RAM bloat.
+* Uses tqdm for progress.
+* Handles I/O safely on large external drives.
+
+## Install Required Package
+```python
+pip install ijson tqdm
+pip install ijson
+```
 
 ## Merge all 5 JSON files
-Merge 2 files at a time. 1 & 2. Then the merged output of 1 & 2 with 3. Merging all 5 at once did not work for me for some reason.
+Merge 2 files at a time. file1 & file2. Then the merged output of file1 & file2 with file3, etc. Merging all 5 at once did not work for me for some reason. The total file size of merged.json is 160.07 GB.
 ```python
 import os
 import json
@@ -90,8 +113,16 @@ with open(output_path, 'w', encoding='utf-8') as outfile:
 print(f"\n✅ Merged {count} total JSON objects into:\n{output_path}")
 ```
 
-## Clean JSON
-The merged JSON, since its reddit data, is in the form {} {} ... object object and is not a proper JSON format. We should correct it by wrapping it in an array and separate the objects by a comma.
+## Convert to Valid JSON
+The merged JSON is not in a valid JSON format. You will get ```IncompleteJSONError: parse error: trailing garbage```. This typically means:
+- Your JSON file is not a valid single JSON object or array.
+- You're trying to parse a file that contains multiple JSON objects without being in a list.
+- Example of bad JSON:
+```json
+{"a": 1}
+{"b": 2}
+```
+This is not valid if parsed as a single JSON object. We should correct it by wrapping it in an array and separate the objects by a comma. To convert it into a single object do as shown below. The total file size of correct.json is 160.33 GB.
 ```python
 with open("/Volumes/10TB/merged_output/merged.json", "r", encoding="utf-8") as infile, \
      open("/Volumes/10TB/correct_json/correct.json", "w", encoding="utf-8") as outfile:
@@ -112,11 +143,9 @@ with open("/Volumes/10TB/merged_output/merged.json", "r", encoding="utf-8") as i
 
 ## JSON to CSV
 
-We need ijson lib to not load all the data into memory at once. If you have only 16GB ram then 38GB wont fit.
+Use ijson — a streaming JSON parser that reads the file incrementally, so it doesn’t blow up your memory. ```json.load(json_file)```  tries to load the entire 160 GB JSON file into RAM, which exceeds your 16 GB RAM and causes Jupyter (and possibly your entire system) to hang or crash. The total file size of 2tb_reddit_comments_2015.csv is 85.07 GB.
 
 ```python
-pip install ijson
-
 import ijson
 import csv
 import os
@@ -129,25 +158,25 @@ output_csv_path = os.path.join(output_dir, '2tb_reddit_comments_2015.csv')
 # Ensure output directory exists
 os.makedirs(output_dir, exist_ok=True)
 
-with open(input_json_path, 'rb') as json_file, open(output_csv_path, 'w', newline='', encoding='utf-8') as csv_file:
-    # Stream each item in the top-level JSON array
+# First pass: collect all keys from all rows
+print("Scanning all keys...")
+all_keys = set()
+with open(input_json_path, 'rb') as json_file:
     items = ijson.items(json_file, 'item')
-    first_item = next(items)
-
-    # Retain all columns
-    all_keys = set()
     for item in items:
         all_keys.update(item.keys())
-    fieldnames = sorted(all_keys)  # consistent column order
 
-    # Initialize CSV writer
-    writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+fieldnames = sorted(all_keys)
+
+# Second pass: write to CSV
+print("Writing CSV...")
+with open(input_json_path, 'rb') as json_file, open(output_csv_path, 'w', newline='', encoding='utf-8') as csv_file:
+    items = ijson.items(json_file, 'item')
+    writer = csv.DictWriter(csv_file, fieldnames=fieldnames, extrasaction='ignore')
     writer.writeheader()
-    writer.writerow(first_item)
-
     for item in items:
         writer.writerow(item)
 
-print(f"CSV file saved to: {output_csv_path}")
+print(f"✅ CSV file saved to: {output_csv_path}")
 ```
 
