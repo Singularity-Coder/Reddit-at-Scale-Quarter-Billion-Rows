@@ -1,9 +1,11 @@
-# EDA-2TB-Reddit (Work In-Progress)
-Exploratory Data Analysis on 2 Terra Bytes of Reddit data. 
+# Half-Billion-Records-Reddit-EDA (Work In-Progress)
+Exploratory Data Analysis on 1/2 Billion records of Reddit data.
 
 ## Dataset 5 files
-The data is in the JSONL or single object per line format.
 * [Reddit Comments 2015 dataset](https://archive.org/download/2015_reddit_comments_corpus/reddit_data/2015/)
+* The data is in the JSONL or single object per line format. 
+* Total records: 529,610,375 which is about 530 million or 1/2 billion records.
+
 
 ## Sample JSONL reddit comments 2015
 ```json
@@ -180,3 +182,10 @@ with open(input_json_path, 'rb') as json_file, open(output_csv_path, 'w', newlin
 print(f"✅ CSV file saved to: {output_csv_path}")
 ```
 
+## Get Total Records
+Run this in terminal to see the total records:
+```shell
+wc -l /Volumes/TenTB/csv_output/reddit_comments_2015.csv
+```
+* Total records: 529,610,375 which is about 530 million or 1/2 billion records.
+* Do start file names with digits. Shell commands will cause problems.
