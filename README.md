@@ -189,9 +189,19 @@ print(f"✅ CSV file saved to: {output_csv_path}")
 * This will give the correct number of records. 266,268,920 which is about a quarter billion records:
 
 ```python
-import polars as pl
+!pip install polars duckdb datatable
+!pip install --quiet polars duckdb datatable
+!pip install "modin[ray]"
+!pip install "dask[complete]"
+!pip install "ray[default]"
+!pip install csvstat
+# Restart Kernal after this
+```
 
-lf = pl.scan_csv('/Volumes/TenTB/csv_output/reddit_comments_2015.csv', infer_schema_length=1000)
+```python
+import polars as pl # Super fast compared to csvstat
+
+lf = pl.scan_csv('/Volumes/alienHD/csv_output/reddit_comments_2015.csv', infer_schema_length=1000)
 row_count = lf.select(pl.len()).collect()[0, 0]
 print(f"Total rows: {row_count}")
 ```
