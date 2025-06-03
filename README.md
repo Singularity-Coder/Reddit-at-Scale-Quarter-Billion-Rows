@@ -1,5 +1,5 @@
-# Half-Billion-Records-Reddit-EDA (Work In-Progress)
-Exploratory Data Analysis on 1/2 Billion records of Reddit data.
+# Quarter-Billion-Records-Reddit-EDA (Work In-Progress)
+Exploratory Data Analysis on 1/4 Billion records of Reddit data.
 
 ## Dataset 5 files
 * [Reddit Comments 2015 dataset](https://archive.org/download/2015_reddit_comments_corpus/reddit_data/2015/)
@@ -70,8 +70,8 @@ import json
 import ijson
 from tqdm import tqdm
 
-input_dir = '/Volumes/10TB/5_files_2TB_reddit_comments'
-output_path = '/Volumes/10TB/merged_output/merged.jsonl'
+input_dir = '/Volumes/TenTB/five_files_130GB_reddit_comments'
+output_path = '/Volumes/TenTB/merged_output/merged.jsonl'
 
 files = [f for f in os.listdir(input_dir) if f.endswith('.json') or f.endswith('.jsonl')]
 print(f"Found {len(files)} files to process.\n")
@@ -126,8 +126,8 @@ The merged JSON is not in a valid JSON format. You will get ```IncompleteJSONErr
 ```
 This is not valid if parsed as a single JSON object. We should correct it by wrapping it in an array and separate the objects by a comma. To convert it into a single object do as shown below. The total file size of correct.json is 160.33 GB.
 ```python
-with open("/Volumes/10TB/merged_output/merged.json", "r", encoding="utf-8") as infile, \
-     open("/Volumes/10TB/correct_json/correct.json", "w", encoding="utf-8") as outfile:
+with open("/Volumes/TenTB/merged_output/merged.json", "r", encoding="utf-8") as infile, \
+     open("/Volumes/TenTB/correct_json/correct.json", "w", encoding="utf-8") as outfile:
 
     outfile.write("[\n")
     first = True
@@ -153,9 +153,9 @@ import csv
 import os
 
 # Paths
-input_json_path = '/Volumes/10TB/correct_json/correct.json'
-output_dir = '/Volumes/10TB/csv_output/'
-output_csv_path = os.path.join(output_dir, '2tb_reddit_comments_2015.csv')
+input_json_path = '/Volumes/TenTB/correct_json/correct.json'
+output_dir = '/Volumes/TenTB/csv_output/'
+output_csv_path = os.path.join(output_dir, 'reddit_comments_2015.csv')
 
 # Ensure output directory exists
 os.makedirs(output_dir, exist_ok=True)
@@ -183,9 +183,15 @@ print(f"✅ CSV file saved to: {output_csv_path}")
 ```
 
 ## Get Total Records
-Run this in terminal to see the total records:
-```shell
-wc -l /Volumes/TenTB/csv_output/reddit_comments_2015.csv
-```
-* Total records: 529,610,375 which is about 530 million or 1/2 billion records.
 * Do start file names with digits. Shell commands will cause problems.
+* Do "jupyter notebook" by navigating to external storage directory in terminal
+* Running ```wc -l /Volumes/TenTB/csv_output/reddit_comments_2015.csv``` in terminal will not give the correct number of records unless each record is exactly 1 line. This counts the number of lines which is inaccurate. It gave 529,610,375 records.
+* This will give the correct number of records. 266,268,920 which is about a quarter billion records:
+
+```python
+import polars as pl
+
+lf = pl.scan_csv('/Volumes/TenTB/csv_output/reddit_comments_2015.csv', infer_schema_length=1000)
+row_count = lf.select(pl.len()).collect()[0, 0]
+print(f"Total rows: {row_count}")
+```
