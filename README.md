@@ -1,5 +1,5 @@
-# Quarter-Billion-Records-Reddit-EDA (Work In-Progress)
-Exploratory Data Analysis on 1/4 Billion records of Reddit data.
+# Quarter Billion Records EDA On MacBook Air (Work In-Progress)
+Exploratory Data Analysis on 1/4 Billion records of Reddit data done on MacBook Air with 16GB RAM.
 
 ## Dataset 5 files
 * [Reddit Comments 2015 dataset](https://archive.org/download/2015_reddit_comments_corpus/reddit_data/2015/)
@@ -58,8 +58,15 @@ Here’s a memory-safe script that:
 
 ## Install Required Package
 ```python
-pip install ijson tqdm
-pip install ijson
+!pip install ijson tqdm
+!pip install ijson
+!pip install polars duckdb datatable
+!pip install --quiet polars duckdb datatable
+!pip install "modin[ray]"
+!pip install "dask[complete]"
+!pip install "ray[default]"
+!pip install csvstat
+# Restart Kernal after this
 ```
 
 ## Merge all 5 JSON files
@@ -187,16 +194,6 @@ print(f"✅ CSV file saved to: {output_csv_path}")
 * Do "jupyter notebook" by navigating to external storage directory in terminal
 * Running ```wc -l /Volumes/TenTB/csv_output/reddit_comments_2015.csv``` in terminal will not give the correct number of records unless each record is exactly 1 line. This counts the number of lines which is inaccurate. It gave 529,610,375 records.
 * This will give the correct number of records. 266,268,920 which is about a quarter billion records:
-
-```python
-!pip install polars duckdb datatable
-!pip install --quiet polars duckdb datatable
-!pip install "modin[ray]"
-!pip install "dask[complete]"
-!pip install "ray[default]"
-!pip install csvstat
-# Restart Kernal after this
-```
 
 ```python
 import polars as pl # Super fast compared to csvstat
