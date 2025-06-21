@@ -58,14 +58,12 @@ Here’s a memory-safe script that:
 
 ## Install Required Package
 ```python
+# If you dont want to see install logs other than critical messages like errors use --quiet
+# !pip install --quiet polars
+
 !pip install ijson tqdm
 !pip install ijson
-!pip install polars duckdb datatable
-!pip install --quiet polars duckdb datatable
-!pip install "modin[ray]"
-!pip install "dask[complete]"
-!pip install "ray[default]"
-!pip install csvstat
+!pip install polars
 # Restart Kernal after this
 ```
 
