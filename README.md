@@ -61,9 +61,13 @@ Here’s a memory-safe script that:
 # If you dont want to see install logs other than critical messages like errors use --quiet
 # !pip install --quiet polars
 
+# Try installing directly inside the current environment using %pip (Jupyter magic command):
+# %pip install ijson tqdm
+
 !pip install ijson tqdm
 !pip install ijson
 !pip install polars
+
 # Restart Kernal after this
 ```
 
