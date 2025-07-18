@@ -21,18 +21,49 @@ Then initialize:
 
 ```bash
 gcloud init
+gcloud auth login
 ```
 
 This will open a browser to log in to your Google account and set the project.
 
-### Step 2: Set Up Authentication (if not done already)
+### Step 2: Upload File with Optimized Settings
 
 ```bash
-gcloud auth login
-gcloud config set project your-project-id
+gcloud storage cp /path/to/yourfile gs://your-bucket-name/
 ```
 
-### Step 3: Upload File with Optimized Settings
+**By default:**
+
+* Files over **8 MB** are **resumable**.
+* If upload fails (network disconnect), you **re-run the same command**, it **resumes automatically**.
+
+**Optional Control:**
+
+* **Chunk Size** (RAM control):
+
+```bash
+gcloud storage cp --chunk-size=32M /path/to/yourfile gs://your-bucket-name/
+```
+
+* **Parallelism**:
+
+  * `gcloud storage cp` **does not use parallelism** like `gsutil`.
+  * **It favors stability over speed**.
+
+**Summary:**
+
+| Feature            | `gcloud storage cp`        |
+| ------------------ | -------------------------- |
+| Resumable Upload   | ✅ **Always on by default** |
+| Parallel Upload    | ❌ No                       |
+| RAM Efficient      | ✅ Yes                      |
+| Speed              | ⚠️ Medium                  |
+| Chunk Size Control | ✅ Yes via `--chunk-size`   |
+
+If you want **parallel fast upload** → use `gsutil`.
+If you want **RAM-efficient, fail-safe upload** → use `gcloud storage cp` (no `--resumable` needed).
+
+___
 
 This command ensures large files are **split into smaller chunks** and uploaded **efficiently**, **without overloading RAM**.
 
@@ -45,7 +76,7 @@ gsutil -o "GSUtil:parallel_composite_upload_threshold=150M" cp -r -D /path/to/yo
 * `/path/to/yourfile`: Full path to your file (you can drag-drop in terminal).
 * `gs://your-bucket-name/`: Your target Google Cloud Storage bucket.
 
-### Step 4: (Optional) Limit Parallelism to Save RAM
+(Optional) Limit Parallelism to Save RAM
 
 If RAM is still high, you can **reduce concurrency**:
 
