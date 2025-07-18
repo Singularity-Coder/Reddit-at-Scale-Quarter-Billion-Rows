@@ -26,51 +26,20 @@ gcloud auth login
 
 This will open a browser to log in to your Google account and set the project.
 
-### Step 2: Upload File with Optimized Settings
-
-```bash
-gcloud storage cp /path/to/yourfile gs://your-bucket-name/
-```
-
-**By default:**
-
-* Files over **8 MB** are **resumable**.
-* If upload fails (network disconnect), you **re-run the same command**, it **resumes automatically**.
-
-**Optional Control:**
-
-* **Chunk Size** (RAM control):
-
-```bash
-gcloud storage cp --chunk-size=32M /path/to/yourfile gs://your-bucket-name/
-```
-
-* **Parallelism**:
-
-  * `gcloud storage cp` **does not use parallelism** like `gsutil`.
-  * **It favors stability over speed**.
-
-**Summary:**
-
-| Feature            | `gcloud storage cp`        |
-| ------------------ | -------------------------- |
-| Resumable Upload   | ✅ **Always on by default** |
-| Parallel Upload    | ❌ No                       |
-| RAM Efficient      | ✅ Yes                      |
-| Speed              | ⚠️ Medium                  |
-| Chunk Size Control | ✅ Yes via `--chunk-size`   |
-
-If you want **parallel fast upload** → use `gsutil`.
-If you want **RAM-efficient, fail-safe upload** → use `gcloud storage cp` (no `--resumable` needed).
-
-___
-
 This command ensures large files are **split into smaller chunks** and uploaded **efficiently**, **without overloading RAM**.
 
 ```bash
-gsutil -o "GSUtil:parallel_composite_upload_threshold=150M" cp -r -D /path/to/yourfile gs://your-bucket-name/
+gsutil -o "GSUtil:parallel_composite_upload_threshold=150M" \
+       -o "Boto:num_retries=20" \
+       -o "Boto:max_retry_delay=300" \
+       cp -r -D \
+       /path/to/yourfile \
+       gs://your-bucket-name/
 ```
 * `-o "GSUtil:parallel_composite_upload_threshold=150M"`: Files **larger than 150MB** are split into smaller components for upload, making the process **faster and more memory-efficient**.
+* `-o "Boto:num_retries"`: Total retries (default: 23). This will retry up to 23 times automatically before failing.
+* `-o "Boto:max_retry_delay"`: Max backoff time (default: 32s). 300s = 5 minutes backoff.
+* `-o "Boto:retry_delay_multiplier"`: Exponential backoff growth (default: 2.0). It means after every retry the delay gets twice as long if its 2.0. 1st retry 2 sec, 2nd try 4 sec, 3rd try 8 sec, etc. To reduce load on your computer and the server during failures (e.g., network blips, server throttling). Avoids hammering the server with constant retries, helps stabilize uploads.
 * `cp`: Copy the file.
 * `-D` shows upload progress
 * `/path/to/yourfile`: Full path to your file (you can drag-drop in terminal).
@@ -84,7 +53,22 @@ If RAM is still high, you can **reduce concurrency**:
 gsutil -o "GSUtil:parallel_composite_upload_threshold=150M" \
        -o "GSUtil:parallel_process_count=1" \
        -o "GSUtil:parallel_thread_count=1" \
-       cp /path/to/yourfile gs://your-bucket-name/
+       cp /path/to/yourfile \
+       gs://your-bucket-name/
 ```
 
 This forces **single-threaded uploads**, which will be slower but minimal on RAM.
+
+**By default:**
+* If upload fails (network disconnect or you manually cancel it ctrl+c), you **re-run the same command**, it **resumes automatically**. Enabled for parallel composite uploads (files split into parts). After Interruption, just rerun, resumes chunks (composite). Session Lifetime is ~7 days or until components expire. Partial chunks resume for massive files.
+* For **complex retry logic**, **parallelism**, **more speed tuning**, **parallel fast upload** → use `gsutil`.
+* **If you need speed, retries, parallel tuning, or are uploading really huge files (multi-hundred GB)** → **`gsutil cp`** gives you **finer control**.
+* **For programmatic scripting (bash scripts, cron jobs)** → `gsutil` often preferred.
+* **Parallel Upload**: Yes via `parallel_composite_upload_threshold`
+* **Resumable Upload**: Only via parallel composite (partial chunks retry)
+* **Chunk Size Control**: Threshold splits into parallel chunks.
+* **RAM Efficiency**: Medium (parallel threads = higher RAM).
+* `parallel_composite_upload_threshold` **Controls when gsutil splits files into multiple chunks for parallel upload**.
+* **Default = 150MB** → if your file is **larger than 150MB**, it gets split into multiple chunks (composite upload). You CAN increase this value to say 500MB.
+    * Files under 500MB will upload normally (single stream).
+    * Files over 500MB will be split into **multiple parts** and uploaded in parallel.
