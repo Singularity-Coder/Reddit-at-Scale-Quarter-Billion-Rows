@@ -1,16 +1,25 @@
 # Quarter Billion Records EDA On Google Cloud (BigQuery)
 Exploratory Data Analysis on 1/4 Billion records of Reddit data done using Google Cloud (BigQuery).
 
+### Step 1: Open Google Cloud
+* Open [Google Cloud](https://console.cloud.google.com/welcome).
+* Upload the 2TB file to [Google Cloud Storage](https://console.cloud.google.com/storage) as max capacity for a BigQuery data set seems to be 100MB as of 20 Apr, 2025.
+* Check [Billing](https://console.cloud.google.com/home/dashboard) details on Dashboard.
+* Check [Pricing](https://cloud.google.com/storage/pricing).
+* EDA will be done on [Bigquery](https://console.cloud.google.com/bigquery).
 
-## Uploading large files to Google Cloud Storage without overloading Laptop RAM
+
+### Step 2: Create a Bucket
+If this is disabled then you don't have billing enabled or your account is not verified.
+
+
+### Step 3: Install Google Cloud SDK on macOS
+Uploading large files to Google Cloud Storage without overloading Laptop RAM:
 * **Avoid Browser Upload for Huge Files**: If you're using the browser to upload large files, it can be inefficient. Chrome especially can cause high RAM usage when handling big files. Use `gsutil` or the `gcloud storage cp` command-line tools. Google Cloud upload CLI tools (like `gsutil` or the browser uploader) **do not load the full file into RAM** during upload. They **stream** the file in chunks — meaning only small portions are read into memory at a time.
 * **`gsutil` Parallelism**: If you're using `gsutil cp` with parallelism (`-m` flag), it can use more memory by opening multiple threads. 
 * **Other Apps**: Other apps (Chrome tabs, IDEs, background apps) may be taking memory while the upload is running, making it look like the upload is the cause.
 * **macOS Caching**: macOS aggressively caches disk reads in memory. So when you upload, macOS may cache parts of the file in RAM, but this is temporary and not necessary for the upload itself.
 * **Restart Before Upload**: Close unnecessary apps to free up memory before uploading.
-
-
-### Step 1: Install Google Cloud SDK on macOS
 * [Google Cloud SDK Install Guide](https://cloud.google.com/sdk/docs/install)
 
 ```bash
@@ -23,7 +32,7 @@ gcloud cheat-sheet
 gcloud --help
 ```
 
-### Step 2: Authenticate
+### Step 4: Authenticate
 
 Then initialize:
 
@@ -37,7 +46,7 @@ This will open a browser to log in to your Google account and set the project.
 After authenticating from CLI you will see this page:
 https://cloud.google.com/sdk/auth_success 
 
-### Step 3: Upload file
+### Step 5: Upload file
 This command ensures large files are **split into smaller chunks** and uploaded **efficiently**, **without overloading RAM**.
 
 ```bash
