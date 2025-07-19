@@ -17,6 +17,14 @@ Exploratory Data Analysis on 1/4 Billion records of Reddit data done using Googl
 brew install --cask google-cloud-sdk
 ```
 
+Google Cloud help command (Optional):
+```bash
+gcloud cheat-sheet
+gcloud --help
+```
+
+### Step 2: Authenticate
+
 Then initialize:
 
 ```bash
@@ -26,6 +34,10 @@ gcloud auth login
 
 This will open a browser to log in to your Google account and set the project.
 
+After authenticating from CLI you will see this page:
+https://cloud.google.com/sdk/auth_success 
+
+### Step 3: Upload file
 This command ensures large files are **split into smaller chunks** and uploaded **efficiently**, **without overloading RAM**.
 
 ```bash
@@ -61,14 +73,12 @@ This forces **single-threaded uploads**, which will be slower but minimal on RAM
 
 **By default:**
 * If upload fails (network disconnect or you manually cancel it ctrl+c), you **re-run the same command**, it **resumes automatically**. Enabled for parallel composite uploads (files split into parts). After Interruption, just rerun, resumes chunks (composite). Session Lifetime is ~7 days or until components expire. Partial chunks resume for massive files.
-* For **complex retry logic**, **parallelism**, **more speed tuning**, **parallel fast upload** → use `gsutil`.
 * **If you need speed, retries, parallel tuning, or are uploading really huge files (multi-hundred GB)** → **`gsutil cp`** gives you **finer control**.
-* **For programmatic scripting (bash scripts, cron jobs)** → `gsutil` often preferred.
-* **Parallel Upload**: Yes via `parallel_composite_upload_threshold`
+* **For programmatic scripting (bash scripts, cron jobs)** → Use `gsutil`.
 * **Resumable Upload**: Only via parallel composite (partial chunks retry)
 * **Chunk Size Control**: Threshold splits into parallel chunks.
 * **RAM Efficiency**: Medium (parallel threads = higher RAM).
-* `parallel_composite_upload_threshold` **Controls when gsutil splits files into multiple chunks for parallel upload**.
+* **Parallel Upload**: Yes via `parallel_composite_upload_threshold`. It controls when gsutil splits files into multiple chunks for parallel upload.
 * **Default = 150MB** → if your file is **larger than 150MB**, it gets split into multiple chunks (composite upload). You CAN increase this value to say 500MB.
     * Files under 500MB will upload normally (single stream).
     * Files over 500MB will be split into **multiple parts** and uploaded in parallel.
