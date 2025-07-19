@@ -11,6 +11,7 @@ Exploratory Data Analysis on 1/4 Billion records of Reddit data done using Googl
 
 ### Step 2: Create a Bucket
 If this is disabled then you don't have billing enabled or your account is not verified.
+![alt text](https://github.com/Singularity-Coder/Quarter-Billion-Records-EDA-On-MacBook-Air/blob/main/assets/ss1.png)
 
 
 ### Step 3: Install Google Cloud SDK on macOS
