@@ -1,4 +1,4 @@
-# Quarter Billion Records EDA On Google Cloud (BigQuery)
+# Quarter Billion Records EDA On Google Cloud (BigQuery) (In-Progress)
 Exploratory Data Analysis on 1/4 Billion records of Reddit data done using Google Cloud (BigQuery).
 
 ### Step 1: Open Google Cloud
