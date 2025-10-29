@@ -1,6 +1,7 @@
+![alt text](https://github.com/Singularity-Coder/Quarter-Billion-EDA/blob/main/assets/banner.png)
+
 # Quarter Billion Records EDA On MacBook Air
 Exploratory Data Analysis on 1/4 Billion records of Reddit data done on MacBook Air with 16GB RAM.
-![alt text](https://github.com/Singularity-Coder/Quarter-Billion-EDA/blob/main/assets/banner.png)
 
 
 ## Dataset 5 files
