@@ -38,8 +38,8 @@ Exploratory Data Analysis on 1/4 Billion records of Reddit data done on MacBook 
 ```
 
 ## Prepare Data
-* To perform EDA, we need to convert the 5 bz2 Gzip files into a single parquet file. Use `Reddit-at-Scale-Quarter-Billion-Rows/extras/bz2_to_parquet.py` [file](https://github.com/Singularity-Coder/Reddit-at-Scale-Quarter-Billion-Rows/blob/main/extras/bz2_to_parquet.py) to get the file. Put all the bz2 files in a single directory and run this script. Then perform EDA as shown below.
+* To perform EDA, we need to convert the 5 bz2 Gzip files into a single parquet file. Use [bz2_to_parquet.py](https://github.com/Singularity-Coder/Reddit-at-Scale-Quarter-Billion-Rows/blob/main/scripts/bz2_to_parquet.py) to get the file. Put all the bz2 files in a single directory and run this script. Then perform EDA as shown below.
 
 
 ## Exploratory Data Analysis
-Check EDA here - [reddit_eda.ipynb]()
+Check EDA here - [reddit_eda.ipynb](https://github.com/Singularity-Coder/Reddit-at-Scale-Quarter-Billion-Rows/blob/main/reddit_eda.ipynb)
